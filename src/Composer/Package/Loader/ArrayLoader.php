@@ -111,11 +111,5 @@ class ArrayLoader
 
     private function validateConfig(array $config)
     {
-        if (!isset($config['name'])) {
-            throw new \UnexpectedValueException('name is required for package');
-        }
-        if (!isset($config['version'])) {
-            throw new \UnexpectedValueException('version is required for package');
-        }
     }
 }
