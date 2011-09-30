@@ -16,3 +16,6 @@
 [submodule "src/Symfony/Component/Console"]
 	path = src/Symfony/Component/Console
 	url = https://github.com/symfony/Console.git
+[submodule "vendor/json-schema"]
+	path = vendor/json-schema
+	url = https://github.com/igorw/json-schema
