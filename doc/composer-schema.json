@@ -5,41 +5,34 @@
     "properties": {
         "name": {
             "type": "string",
-            "description": "Package name, including type prefix if it's a plugin",
-            "required": true
+            "description": "Package name, including type prefix if it's a plugin"
         },
         "type": {
             "description": "Package type, either 'Library', or the parent project it applies to if it's a plugin for a framework or application (e.g. 'Symfony2', 'Typo3', 'Drupal', ..), note that this has to be defined and communicated by any project implementing a custom composer installer, those are just unreliable examples.",
-            "type": "string",
-            "optional": true
+            "type": "string"
         },
         "description": {
             "type": "string",
-            "description": "Package description",
-            "required": true
+            "description": "Package description"
         },
         "keywords": {
             "type": "array",
             "items": {
                 "type": "string"
-            },
-            "optional": true
+            }
         },
         "homepage": {
             "type": "string",
             "description": "Homepage URL for the project",
-            "format": "uri",
-            "optional": true
+            "format": "uri"
         },
         "version": {
             "type": "string",
-            "description": "Package version, see http://packagist.org/about for more info on valid schemes",
-            "required": true
+            "description": "Package version, see http://packagist.org/about for more info on valid schemes"
         },
         "license": {
             "type": ["string", "array"],
-            "description": "License name",
-            "optional": true
+            "description": "License name"
         },
         "authors": {
             "type": "array",
@@ -65,43 +58,35 @@
                         "optional": true
                     }
                 }
-            },
-            "optional": true
+            }
         },
         "require": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "replace": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "conflict": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "provide": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "recommend": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "suggest": {
             "type": "object",
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         },
         "extra": {
             "type": ["object", "array"],
-            "additionalProperties": true,
-            "optional": true
+            "additionalProperties": true
         }
     }
 }
