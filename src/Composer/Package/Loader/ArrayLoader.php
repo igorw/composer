@@ -14,8 +14,6 @@ namespace Composer\Package\Loader;
 
 use Composer\Package;
 
-use JsonSchema\Validator;
-
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -32,19 +30,10 @@ class ArrayLoader
     );
 
     protected $versionParser;
-    protected $schemaValidator;
 
     public function __construct($parser = null, $schemaValidator = null)
     {
-        $this->versionParser = $parser;
-        if (!$parser) {
-            $this->versionParser = new Package\Version\VersionParser;
-        }
-
-        $this->schemaValidator = $schemaValidator;
-        if (!$schemaValidator) {
-            $this->schemaValidator = new Validator;
-        }
+        $this->versionParser = $parser ?: new Package\Version\VersionParser();
     }
 
     public function load($config)
@@ -119,21 +108,5 @@ class ArrayLoader
 
     private function validateConfig(array $config)
     {
-        $configObj = $this->recursiveArrayToObject($config);
-        $schemaObj = json_decode(file_get_contents(__DIR__.'/../../../../doc/composer-schema.json'));
-        var_dump($this->schemaValidator->validate($config, $schemaObj));
-    }
-
-    private function recursiveArrayToObject($input)
-    {
-        if (is_array($input) && !isset($input[0])) {
-            $object = new \stdClass();
-            foreach ($input as $key => $value) {
-                $object->$key = $this->recursiveArrayToObject($value);
-            }
-            return $object;
-        } else {
-            return $input;
-        }
     }
 }

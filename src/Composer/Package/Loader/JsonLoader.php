@@ -13,20 +13,47 @@
 namespace Composer\Package\Loader;
 
 use Composer\Json\JsonFile;
+use Composer\Json\InvalidJsonException;
+
+use JsonSchema\Validator;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  */
 class JsonLoader extends ArrayLoader
 {
-    public function load($json)
+    protected $schemaValidator;
+
+    public function __construct($parser = null, $schemaValidator = null)
     {
-        if ($json instanceof JsonFile) {
-            $json = $json->read();
-        } elseif (is_string($json)) {
-            $json = JsonFile::parseJson($json);
+        parent::__construct($parser);
+
+        $this->schemaValidator = $schemaValidator ?: new Validator();
+    }
+
+    public function load($jsonFile)
+    {
+        if ($jsonFile instanceof JsonFile) {
+            $this->validateJson($jsonFile);
         }
 
-        return parent::load($config);
+        return parent::load($jsonFile->read());
+    }
+
+    private function validateJson(JsonFile $jsonFile)
+    {
+        $config = $jsonFile->read(false);
+
+        $schemaJson = file_get_contents(__DIR__.'/../../../../doc/composer-schema.json');
+        $schema = JsonFile::parseJson($schemaJson, false);
+
+        $result = $this->schemaValidator->validate($config, $schema);
+        if (!$result->valid) {
+            $errors = array_map(function ($error) { return $error['message']; }, $result->errors);
+            throw new InvalidJsonException(
+                sprintf("The JSON for '%s' failed schema validation.", $jsonFile->getPath()),
+                $errors
+            );
+        }
     }
 }

@@ -22,6 +22,7 @@ use Composer\Repository\RepositoryManager;
 class JsonFile
 {
     private $path;
+    private $schema;
 
     /**
      * Initializes json file reader/parser.
@@ -31,6 +32,16 @@ class JsonFile
     public function __construct($path)
     {
         $this->path = $path;
+    }
+
+    /**
+     * Get the JSON file's path
+     *
+     * @return  string path
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -50,11 +61,11 @@ class JsonFile
      *
      * @return  array
      */
-    public function read()
+    public function read($assoc = true)
     {
         $json = file_get_contents($this->path);
 
-        return static::parseJson($json);
+        return static::parseJson($json, $assoc);
     }
 
     /**
@@ -74,9 +85,9 @@ class JsonFile
      *
      * @return  array
      */
-    public static function parseJson($json)
+    public static function parseJson($json, $assoc)
     {
-        $hash = json_decode($json, true);
+        $hash = json_decode($json, $assoc);
         if (!$hash) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
@@ -98,7 +109,10 @@ class JsonFile
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
                 break;
             }
-            throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
+            throw new InvalidJsonException(
+                sprintf("Invalid JSON in '%s'.", $this->getPath()),
+                array($msg)
+            );
         }
 
         return $hash;
