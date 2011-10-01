@@ -8,11 +8,14 @@ use Composer\Installer;
 use Composer\Downloader;
 use Composer\Repository;
 use Composer\Package;
+use Composer\Json\JsonFile;
 use Composer\Console\Application as ComposerApplication;
 
 // initialize repository manager
 $rm = new Repository\RepositoryManager();
-$rm->setLocalRepository(new Repository\PlatformRepository(new Repository\FilesystemRepository('.composer/installed.json')));
+$rm->setLocalRepository(new Repository\PlatformRepository(
+    new Repository\FilesystemRepository(new JsonFile('.composer/installed.json'))
+));
 $rm->setRepository('Packagist', new Repository\ComposerRepository('http://packagist.org'));
 
 // initialize download manager
@@ -27,12 +30,16 @@ $im->setInstaller('library', new Installer\LibraryInstaller('vendor', $dm, $rm->
 
 // load package
 $loader  = new Package\Loader\JsonLoader();
-$package = $loader->load('composer.json');
+$package = $loader->load(new JsonFile('composer.json'));
+
+
+// init locker
+$locker = new Package\Locker(new JsonFile('composer.lock'), $rm);
 
 // initialize composer
 $composer = new Composer();
 $composer->setPackage($package);
-$composer->setPackageLock(new Package\PackageLock('composer.lock'));
+$composer->setLocker($locker);
 $composer->setRepositoryManager($rm);
 $composer->setDownloadManager($dm);
 $composer->setInstallationManager($im);

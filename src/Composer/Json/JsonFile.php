@@ -10,59 +10,74 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Package;
+namespace Composer\Json;
 
-use Composer\Package\MemoryPackage;
-use Composer\Package\Version\VersionParser;
+use Composer\Repository\RepositoryManager;
 
 /**
+ * Reads/writes json files.
+ *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  */
-class PackageLock
+class JsonFile
 {
-    private $file;
-    private $isLocked = false;
+    private $path;
 
-    public function __construct($file = 'composer.lock')
+    /**
+     * Initializes json file reader/parser.
+     *
+     * @param   string  $lockFile   path to a lockfile
+     */
+    public function __construct($path)
     {
-        if (file_exists($file)) {
-            $this->file     = $file;
-            $this->isLocked = true;
-        }
+        $this->path = $path;
     }
 
-    public function isLocked()
+    /**
+     * Checks whether json file exists.
+     *
+     * @return  Boolean
+     */
+    public function exists()
     {
-        return $this->isLocked;
+        return is_file($this->path);
     }
 
-    public function getLockedPackages()
+    /**
+     * Reads json file.
+     *
+     * @param   string  $json   path or json string
+     *
+     * @return  array
+     */
+    public function read()
     {
-        $lockList = $this->loadJsonConfig($this->file);
+        $json = file_get_contents($this->path);
 
-        $versionParser = new VersionParser();
-        $packages      = array();
-        foreach ($lockList as $info) {
-            $version    = $versionParser->normalize($info['version']);
-            $packages[] = new MemoryPackage($info['package'], $version);
-        }
-
-        return $packages;
+        return static::parseJson($json);
     }
 
-    public function lock(array $packages)
+    /**
+     * Writes json file.
+     *
+     * @param   array   $hash   writes hash into json file
+     */
+    public function write(array $hash)
     {
-        // TODO: write installed packages info into $this->file
+        file_put_contents($this->path, json_encode($hash));
     }
 
-    private function loadJsonConfig($json)
+    /**
+     * Parses json string and returns hash.
+     *
+     * @param   string  $json   json string
+     *
+     * @return  array
+     */
+    public static function parseJson($json)
     {
-        if (is_file($json)) {
-            $json = file_get_contents($json);
-        }
-
-        $config = json_decode($json, true);
-        if (!$config) {
+        $hash = json_decode($json, true);
+        if (!$hash) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
                 $msg = 'No error has occurred, is your composer.json file empty?';
@@ -86,6 +101,6 @@ class PackageLock
             throw new \UnexpectedValueException('Incorrect composer.json file: '.$msg);
         }
 
-        return $config;
+        return $hash;
     }
 }
