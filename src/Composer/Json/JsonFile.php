@@ -13,6 +13,7 @@
 namespace Composer\Json;
 
 use Composer\Repository\RepositoryManager;
+use Composer\Composer;
 
 /**
  * Reads/writes json files.
@@ -63,7 +64,11 @@ class JsonFile
      */
     public function read($assoc = true)
     {
-        $json = file_get_contents($this->path);
+        $context = stream_context_create(array(
+            'http' => array('header' => 'User-Agent: Composer/'.Composer::VERSION."\r\n")
+        ));
+
+        $json = file_get_contents($this->path, false, $context);
 
         return static::parseJson($json, $assoc);
     }
@@ -75,6 +80,19 @@ class JsonFile
      */
     public function write(array $hash)
     {
+        $dir = dirname($this->path);
+        if (!is_dir($dir)) {
+            if (file_exists($dir)) {
+                throw new \UnexpectedValueException(
+                    $dir.' exists and is not a directory.'
+                );
+            }
+            if (!mkdir($dir, 0777, true)) {
+                throw new \UnexpectedValueException(
+                    $dir.' does not exist and could not be created.'
+                );
+            }
+        }
         file_put_contents($this->path, json_encode($hash));
     }
 
@@ -87,8 +105,9 @@ class JsonFile
      */
     public static function parseJson($json, $assoc)
     {
-        $hash = json_decode($json, $assoc);
-        if (!$hash) {
+        $data = json_decode($json, $assoc);
+
+        if (null === $data && 'null' !== strtolower($json)) {
             switch (json_last_error()) {
             case JSON_ERROR_NONE:
                 $msg = 'No error has occurred, is your composer.json file empty?';
@@ -104,6 +123,11 @@ class JsonFile
                 break;
             case JSON_ERROR_SYNTAX:
                 $msg = 'Syntax error';
+                if (preg_match('#["}\]]\s*(,)\s*\}#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', extra comma on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                } elseif (preg_match('#(\'.+?\' *:|: *\'.+?\')#', $json, $match, PREG_OFFSET_CAPTURE)) {
+                    $msg .= ', use double quotes (") instead of single quotes (\') on line '.(substr_count(substr($json, 0, $match[1][1]), "\n")+1);
+                }
                 break;
             case JSON_ERROR_UTF8:
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
@@ -115,6 +139,6 @@ class JsonFile
             );
         }
 
-        return $hash;
+        return $data;
     }
 }

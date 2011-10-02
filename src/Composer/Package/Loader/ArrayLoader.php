@@ -38,10 +38,8 @@ class ArrayLoader
 
     public function load($config)
     {
-        $this->validateConfig($config);
-
-        $version = $this->versionParser->normalize($config['version']);
-        $package = new Package\MemoryPackage($config['name'], $version);
+        $version = $this->versionParser->normalize(isset($config['version']) ? $config['version'] : '0.0.0');
+        $package = new Package\MemoryPackage(isset($config['name']) ? $config['name'] : '__app__', $version);
 
         $package->setType(isset($config['type']) ? $config['type'] : 'library');
 
@@ -104,9 +102,5 @@ class ArrayLoader
         }
 
         return $links;
-    }
-
-    private function validateConfig(array $config)
-    {
     }
 }

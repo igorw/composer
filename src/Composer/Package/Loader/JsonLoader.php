@@ -31,13 +31,16 @@ class JsonLoader extends ArrayLoader
         $this->schemaValidator = $schemaValidator ?: new Validator();
     }
 
-    public function load($jsonFile)
+    public function load($json)
     {
-        if ($jsonFile instanceof JsonFile) {
-            $this->validateJson($jsonFile);
+        if ($json instanceof JsonFile) {
+            $this->validateJson($json);
+            $config = $json->read();
+        } else {
+            $config = $json;
         }
 
-        return parent::load($jsonFile->read());
+        return parent::load($config);
     }
 
     private function validateJson(JsonFile $jsonFile)
