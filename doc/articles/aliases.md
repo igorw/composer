@@ -31,7 +31,7 @@ specifying a `branch-alias` field under `extra` in `composer.json`:
     {
         "extra": {
             "branch-alias": {
-                "dev-master": "1.0.x-dev"
+                "dev-master": "1.0-dev"
             }
         }
     }
